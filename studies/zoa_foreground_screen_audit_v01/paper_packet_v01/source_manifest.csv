@@ -1,0 +1,4 @@
+SourceID,Citation,URL,Role
+NILO_CASTELLON_2025_ZOA_JWST,"Nilo-Castellon et al., Faint galaxies in the Zone of Avoidance revealed by JWST/NIRCam",https://arxiv.org/abs/2510.12488,motivates Milky Way foreground as an observability screen
+HECATE_V1_1,HECATE v1.1 public catalog,https://hecate.ia.forth.gr/assets/files/HECATE_v1.1.csv,source of RA/DEC for exact-name SPARC overlaps
+PAPER1_LABELS,SPARC residual-disturbance Paper 1 public label packet,https://github.com/jolcsak/sparc-residual-disturbance-paper1,source of residual-blind A/B/C labels

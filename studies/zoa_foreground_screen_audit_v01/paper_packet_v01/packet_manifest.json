@@ -1,0 +1,16 @@
+{
+  "packet": "zoa_foreground_screen_audit_v01/paper_packet_v01",
+  "status": "seed_public_method_note",
+  "primary_screen": "abs_galactic_latitude_deg <= 24",
+  "raw_hecate_tracked": false,
+  "outputs": [
+    "foreground_screen_audit_table.csv",
+    "foreground_screen_threshold_scan.csv",
+    "foreground_screen_summary.csv",
+    "claim_boundary.csv",
+    "source_manifest.csv",
+    "manuscript_draft.md",
+    "manuscript_draft.pdf",
+    "figures/foreground_screen_counts.svg"
+  ]
+}

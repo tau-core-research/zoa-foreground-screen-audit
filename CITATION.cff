@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+title: "Milky Way foreground-screen stratification in a SPARC/HECATE residual audit"
+message: "If you use this repository, please cite the repository and the linked manuscript draft."
+type: software
+authors:
+  - family-names: Jolcsak
+    given-names: ""
+repository-code: "https://github.com/jolcsak/zoa-foreground-screen-audit"
+license: MIT
+version: 0.1.0
+date-released: 2026-05-15
+

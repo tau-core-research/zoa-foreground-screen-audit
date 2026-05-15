@@ -1,0 +1,11 @@
+Metric,Value,Interpretation
+hecate_sparc_overlap_rows,120,exact-name SPARC/HECATE overlaps with RA/DEC
+low_latitude_threshold_deg,24.0,preliminary foreground-screen proxy
+low_latitude_total,18,|b| <= 24 deg
+low_latitude_A,1,reviewed calm/regular class count
+low_latitude_B,11,ambiguous class count
+low_latitude_C,6,reviewed disturbed class count
+high_latitude_A,15,|b| > 24 deg
+high_latitude_B,57,|b| > 24 deg
+high_latitude_C,30,|b| > 24 deg
+ac_one_sided_c_enrichment_p,0.295343139746,diagnostic only; not a detection

@@ -1,0 +1,17 @@
+AbsGalacticLatitudeThresholdDeg,N_total,N_AC,N_A,N_B,N_C,Interpretation
+5,0,0,0,0,0,foreground_screen_proxy_scan
+7.5,0,0,0,0,0,foreground_screen_proxy_scan
+10,1,0,0,1,0,foreground_screen_proxy_scan
+12,2,0,0,2,0,foreground_screen_proxy_scan
+15,8,2,0,6,2,foreground_screen_proxy_scan
+20,13,5,0,8,5,foreground_screen_proxy_scan
+22,15,6,1,9,5,foreground_screen_proxy_scan
+23,17,6,1,11,5,foreground_screen_proxy_scan
+24,18,7,1,11,6,foreground_screen_proxy_scan
+24.5,18,7,1,11,6,foreground_screen_proxy_scan
+25,19,8,1,11,7,foreground_screen_proxy_scan
+26,20,9,1,11,8,foreground_screen_proxy_scan
+27,21,10,2,11,8,foreground_screen_proxy_scan
+28,21,10,2,11,8,foreground_screen_proxy_scan
+29,23,12,2,11,10,foreground_screen_proxy_scan
+30,25,13,3,12,10,foreground_screen_proxy_scan

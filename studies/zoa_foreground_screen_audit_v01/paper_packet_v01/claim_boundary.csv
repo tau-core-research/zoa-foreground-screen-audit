@@ -1,0 +1,7 @@
+Claim,Status,Text
+foreground_screen_count,allowed,|b| <= 24 deg selects 18 HECATE-matched SPARC systems in this packet.
+ac_screen_asymmetry,allowed,"Within those 18 systems, reviewed A/C labels are C-dominant: A=1 and C=6, with B=11."
+observer_screen_motivation,allowed,Zone-of-Avoidance literature motivates treating the Milky Way foreground as a real observability layer.
+physical_detection,blocked,This packet does not claim that Galactic latitude physically causes disturbance or residual behavior.
+new_dynamics_claim,blocked,This packet does not infer new galaxy dynamics or replace existing residual/baryonic models.
+parent_theory_proof,blocked,This packet does not prove or disclose any private parent theory.
