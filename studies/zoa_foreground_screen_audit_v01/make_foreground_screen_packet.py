@@ -22,6 +22,7 @@ HECATE_RAW = ROOT / "data/external/raw/hecate/HECATE_v1.1.csv"
 HECATE_CROSSMATCH = ROOT / "outputs/hecate_crossmatch_summary.csv"
 LABELS = STUDY / "coherence_labels_v06_distance_balanced.csv"
 RESIDUALS = ROOT / "outputs/residual_disturbance_score_v01.csv"
+PUBLIC_RESIDUAL_SUMMARY = ROOT / "outputs/sparc_residual_summary.csv"
 
 # J2000 constants from the standard equatorial-to-Galactic coordinate rotation.
 RA_NGP_DEG = 192.85948
@@ -124,6 +125,142 @@ def build_audit_rows() -> list[dict[str, object]]:
     return sorted(rows, key=lambda row: float(row["AbsGalacticLatitudeDeg"]))
 
 
+def median(values: list[float]) -> float:
+    values = sorted(values)
+    if not values:
+        return float("nan")
+    mid = len(values) // 2
+    if len(values) % 2:
+        return values[mid]
+    return 0.5 * (values[mid - 1] + values[mid])
+
+
+def mean(values: list[float]) -> float:
+    return sum(values) / len(values) if values else float("nan")
+
+
+def build_residual_join(rows: list[dict[str, object]]) -> list[dict[str, object]]:
+    if not PUBLIC_RESIDUAL_SUMMARY.exists():
+        return []
+    by_name = {row["GalaxyName"]: row for row in rows}
+    joined: list[dict[str, object]] = []
+    for residual in read_csv(PUBLIC_RESIDUAL_SUMMARY):
+        name = residual["galaxy_name"]
+        screen = by_name.get(name)
+        if not screen:
+            continue
+        joined.append({**screen, **residual})
+    return joined
+
+
+def build_residual_signal_summary(joined: list[dict[str, object]]) -> list[dict[str, object]]:
+    if not joined:
+        return [
+            {"Metric": "residual_summary_available", "Value": "false", "Interpretation": "outputs/sparc_residual_summary.csv missing"},
+        ]
+    low = [row for row in joined if row["low_latitude_screen_24deg"] == "true"]
+    high = [row for row in joined if row["low_latitude_screen_24deg"] == "false"]
+    metrics = [
+        "rms_log_tpg",
+        "weighted_rms_log_tpg",
+        "mean_log_residual_tpg",
+        "outer_mean_log_residual_tpg",
+        "mean_err_vobs_kms",
+        "max_radius_kpc",
+        "n_points",
+    ]
+    summary = [
+        {"Metric": "residual_summary_available", "Value": "true", "Interpretation": "public Paper 1 residual summary joined to foreground screen"},
+        {"Metric": "residual_join_rows", "Value": len(joined), "Interpretation": "HECATE/SPARC rows with residual summary"},
+        {"Metric": "residual_low_screen_rows", "Value": len(low), "Interpretation": "|b| <= 24 deg"},
+        {"Metric": "residual_high_screen_rows", "Value": len(high), "Interpretation": "|b| > 24 deg"},
+    ]
+    for metric in metrics:
+        low_values = [float(row[metric]) for row in low if row.get(metric) not in {"", None}]
+        high_values = [float(row[metric]) for row in high if row.get(metric) not in {"", None}]
+        if not low_values or not high_values:
+            continue
+        low_med = median(low_values)
+        high_med = median(high_values)
+        summary.extend(
+            [
+                {"Metric": f"{metric}_low_median", "Value": f"{low_med:.12g}", "Interpretation": "low-latitude foreground screen"},
+                {"Metric": f"{metric}_high_median", "Value": f"{high_med:.12g}", "Interpretation": "higher-latitude comparison set"},
+                {"Metric": f"{metric}_low_minus_high_median", "Value": f"{low_med - high_med:.12g}", "Interpretation": "diagnostic difference; not a detection"},
+            ]
+        )
+    summary.append(
+        {
+            "Metric": "interpretation",
+            "Value": "candidate_signed_projection_offset_not_rms_excess_detection",
+            "Interpretation": "RMS median is not elevated in the 18-object screen; signed residual medians shift positive",
+        }
+    )
+    return summary
+
+
+def build_matched_control_pairs(joined: list[dict[str, object]]) -> list[dict[str, object]]:
+    low = [row for row in joined if row["low_latitude_screen_24deg"] == "true"]
+    high = [row for row in joined if row["low_latitude_screen_24deg"] == "false"]
+    if not low or not high:
+        return []
+    features = ["HecateDistanceMpc", "max_radius_kpc", "n_points"]
+    stats: dict[str, tuple[float, float]] = {}
+    for feature in features:
+        values = [math.log(max(float(row[feature]), 1.0e-12)) for row in joined]
+        mu = mean(values)
+        var = mean([(value - mu) ** 2 for value in values])
+        stats[feature] = (mu, math.sqrt(var) or 1.0)
+
+    def z(row: dict[str, object], feature: str) -> float:
+        mu, sigma = stats[feature]
+        return (math.log(max(float(row[feature]), 1.0e-12)) - mu) / sigma
+
+    used: set[str] = set()
+    pairs: list[dict[str, object]] = []
+    for low_row in sorted(low, key=lambda row: float(row["AbsGalacticLatitudeDeg"])):
+        best: tuple[float, dict[str, object]] | None = None
+        for high_row in high:
+            if str(high_row["galaxy_name"]) in used:
+                continue
+            distance = math.sqrt(sum((z(low_row, feature) - z(high_row, feature)) ** 2 for feature in features))
+            if best is None or distance < best[0]:
+                best = (distance, high_row)
+        if best is None:
+            continue
+        high_row = best[1]
+        used.add(str(high_row["galaxy_name"]))
+        pair = {
+            "LowLatitudeGalaxy": low_row["GalaxyName"],
+            "MatchedHighLatitudeGalaxy": high_row["galaxy_name"],
+            "MatchDistance": f"{best[0]:.9g}",
+            "LowClass": low_row["Class"],
+            "HighClass": high_row["Class"],
+            "LowAbsGalacticLatitudeDeg": low_row["AbsGalacticLatitudeDeg"],
+            "HighAbsGalacticLatitudeDeg": high_row["AbsGalacticLatitudeDeg"],
+        }
+        for metric in ["rms_log_tpg", "weighted_rms_log_tpg", "mean_log_residual_tpg", "outer_mean_log_residual_tpg"]:
+            low_value = float(low_row[metric])
+            high_value = float(high_row[metric])
+            pair[f"Low_{metric}"] = f"{low_value:.12g}"
+            pair[f"High_{metric}"] = f"{high_value:.12g}"
+            pair[f"LowMinusHigh_{metric}"] = f"{low_value - high_value:.12g}"
+        pairs.append(pair)
+    return pairs
+
+
+def build_matched_control_summary(pairs: list[dict[str, object]]) -> list[dict[str, object]]:
+    rows = [{"Metric": "matched_pair_count", "Value": len(pairs), "Interpretation": "greedy unique high-latitude controls matched on log distance, max radius, and point count"}]
+    for metric in ["rms_log_tpg", "weighted_rms_log_tpg", "mean_log_residual_tpg", "outer_mean_log_residual_tpg"]:
+        key = f"LowMinusHigh_{metric}"
+        values = [float(row[key]) for row in pairs if row.get(key) not in {"", None}]
+        if not values:
+            continue
+        rows.append({"Metric": f"matched_{metric}_median_low_minus_high", "Value": f"{median(values):.12g}", "Interpretation": "paired diagnostic difference; not a detection"})
+        rows.append({"Metric": f"matched_{metric}_positive_pairs", "Value": f"{sum(value > 0 for value in values)}/{len(values)}", "Interpretation": "sign count across matched pairs"})
+    return rows
+
+
 def build_threshold_scan(rows: list[dict[str, object]]) -> list[dict[str, object]]:
     scan: list[dict[str, object]] = []
     for threshold in [5, 7.5, 10, 12, 15, 20, 22, 23, 24, 24.5, 25, 26, 27, 28, 29, 30]:
@@ -187,6 +324,11 @@ def write_static_tables() -> None:
             "Claim": "observer_screen_motivation",
             "Status": "allowed",
             "Text": "Zone-of-Avoidance literature motivates treating the Milky Way foreground as a real observability layer.",
+        },
+        {
+            "Claim": "candidate_signed_residual_offset",
+            "Status": "allowed",
+            "Text": "The low-latitude screen can be used as a preregistered window for signed residual-offset stress tests.",
         },
         {
             "Claim": "physical_detection",
@@ -293,7 +435,13 @@ def markdown_table(rows: list[dict[str, object]], fieldnames: list[str], max_row
     return "\n".join(lines)
 
 
-def write_manuscript(rows: list[dict[str, object]], summary: list[dict[str, object]], scan_rows: list[dict[str, object]]) -> None:
+def write_manuscript(
+    rows: list[dict[str, object]],
+    summary: list[dict[str, object]],
+    scan_rows: list[dict[str, object]],
+    residual_summary: list[dict[str, object]],
+    matched_summary: list[dict[str, object]],
+) -> None:
     low_rows = [row for row in rows if row["low_latitude_screen_24deg"] == "true"]
     summary_lookup = {row["Metric"]: row["Value"] for row in summary}
     manuscript = f"""# Milky Way foreground-screen stratification in a SPARC/HECATE residual audit
@@ -364,6 +512,33 @@ is small and B-dominated. A one-sided A/C hypergeometric enrichment diagnostic
 returns `p = {summary_lookup['ac_one_sided_c_enrichment_p']}`, which is not a
 discovery-level result.
 
+## Residual-Signal Stress Test
+
+The natural follow-up question is whether the 18-object screen is also a good
+place to look for a residual projection signal. We therefore join the foreground
+screen to the public Paper 1 residual summary and test two distinct possibilities:
+
+1. A residual-scatter excess.
+2. A signed residual offset.
+
+The current packet does **not** support a simple RMS-excess claim. The median
+`rms_log_tpg` in the low-latitude screen is slightly lower than the high-latitude
+comparison set. The more interesting candidate is instead a signed offset:
+`mean_log_residual_tpg` and `outer_mean_log_residual_tpg` shift positive in the
+low-latitude screen. This is exactly the sort of weak observer-screen candidate
+that should be preregistered before any stronger interpretation.
+
+{markdown_table(residual_summary, ['Metric', 'Value', 'Interpretation'])}
+
+## Matched-Control Preview
+
+As a first guardrail, each low-latitude galaxy is greedily matched to a unique
+higher-latitude control by log HECATE distance, log radial extent, and log point
+count. This is only a preview; it is not a covariance-aware likelihood or an
+extinction-aware analysis.
+
+{markdown_table(matched_summary, ['Metric', 'Value', 'Interpretation'])}
+
 The correct reading is therefore:
 
 ```text
@@ -371,6 +546,10 @@ The Milky Way foreground screen is a real observability stratum. In this SPARC/
 HECATE packet, a reconstructed 18-object low-|b| screen is C-dominant among
 reviewed A/C labels, but the result remains a preregistered audit target rather
 than a physical inference.
+
+The residual follow-up does not show a robust RMS-excess detection. It does show
+a candidate signed residual-offset direction that is worth freezing as the next
+observer-screen test.
 ```
 
 ## Next Tests
@@ -431,8 +610,10 @@ def write_status_and_manifest() -> None:
 Status: seed public method note / observer-screen audit.
 
 The current packet reconstructs an 18-object low-Galactic-latitude screen from
-HECATE RA/DEC and public SPARC labels. The result is directional but not
-statistically decisive. It should be treated as a preregistration target for a
+HECATE RA/DEC and public SPARC labels. The label result is directional but not
+statistically decisive. A follow-up residual stress test does not support a
+simple RMS-excess claim, but it does expose a candidate signed residual-offset
+direction. Both results should be treated as preregistration targets for a
 stronger extinction-aware analysis.
 """
     (PACKET / "status.md").write_text(status, encoding="utf-8")
@@ -460,6 +641,9 @@ computes Galactic coordinates, and rebuilds all packet tables.
             "foreground_screen_audit_table.csv",
             "foreground_screen_threshold_scan.csv",
             "foreground_screen_summary.csv",
+            "foreground_residual_signal_summary.csv",
+            "foreground_matched_control_pairs.csv",
+            "foreground_matched_control_summary.csv",
             "claim_boundary.csv",
             "source_manifest.csv",
             "manuscript_draft.md",
@@ -476,6 +660,10 @@ def main() -> None:
     rows = build_audit_rows()
     scan_rows = build_threshold_scan(rows)
     summary = build_summary(rows)
+    residual_join = build_residual_join(rows)
+    residual_summary = build_residual_signal_summary(residual_join)
+    matched_pairs = build_matched_control_pairs(residual_join)
+    matched_summary = build_matched_control_summary(matched_pairs)
 
     audit_fields = [
         "GalaxyName",
@@ -505,9 +693,33 @@ def main() -> None:
     write_csv(PACKET / "foreground_screen_audit_table.csv", rows, audit_fields)
     write_csv(PACKET / "foreground_screen_threshold_scan.csv", scan_rows, scan_fields)
     write_csv(PACKET / "foreground_screen_summary.csv", summary, ["Metric", "Value", "Interpretation"])
+    write_csv(PACKET / "foreground_residual_signal_summary.csv", residual_summary, ["Metric", "Value", "Interpretation"])
+    matched_pair_fields = [
+        "LowLatitudeGalaxy",
+        "MatchedHighLatitudeGalaxy",
+        "MatchDistance",
+        "LowClass",
+        "HighClass",
+        "LowAbsGalacticLatitudeDeg",
+        "HighAbsGalacticLatitudeDeg",
+        "Low_rms_log_tpg",
+        "High_rms_log_tpg",
+        "LowMinusHigh_rms_log_tpg",
+        "Low_weighted_rms_log_tpg",
+        "High_weighted_rms_log_tpg",
+        "LowMinusHigh_weighted_rms_log_tpg",
+        "Low_mean_log_residual_tpg",
+        "High_mean_log_residual_tpg",
+        "LowMinusHigh_mean_log_residual_tpg",
+        "Low_outer_mean_log_residual_tpg",
+        "High_outer_mean_log_residual_tpg",
+        "LowMinusHigh_outer_mean_log_residual_tpg",
+    ]
+    write_csv(PACKET / "foreground_matched_control_pairs.csv", matched_pairs, matched_pair_fields)
+    write_csv(PACKET / "foreground_matched_control_summary.csv", matched_summary, ["Metric", "Value", "Interpretation"])
     write_static_tables()
     write_figure(scan_rows)
-    write_manuscript(rows, summary, scan_rows)
+    write_manuscript(rows, summary, scan_rows, residual_summary, matched_summary)
     write_pdf()
     write_status_and_manifest()
     print(f"Wrote foreground-screen packet: {PACKET}")

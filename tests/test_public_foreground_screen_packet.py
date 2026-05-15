@@ -19,12 +19,15 @@ def test_packet_files_exist():
         ROOT / "CITATION.cff",
         ROOT / "requirements.txt",
         ROOT / "outputs/hecate_crossmatch_summary.csv",
+        ROOT / "outputs/sparc_residual_summary.csv",
         ROOT / "studies/zoa_foreground_screen_audit_v01/coherence_labels_v06_distance_balanced.csv",
         PACKET / "manuscript_draft.md",
         PACKET / "manuscript_draft.pdf",
         PACKET / "foreground_screen_audit_table.csv",
         PACKET / "foreground_screen_threshold_scan.csv",
         PACKET / "foreground_screen_summary.csv",
+        PACKET / "foreground_residual_signal_summary.csv",
+        PACKET / "foreground_matched_control_pairs.csv",
         PACKET / "claim_boundary.csv",
         PACKET / "source_manifest.csv",
         PACKET / "packet_manifest.json",
@@ -48,6 +51,14 @@ def test_summary_records_not_a_detection():
     assert "physical_detection" in blocked
     assert "new_dynamics_claim" in blocked
     assert "parent_theory_proof" in blocked
+
+
+def test_residual_signal_is_framed_as_candidate_not_detection():
+    rows = read_csv(PACKET / "foreground_residual_signal_summary.csv")
+    by_metric = {row["Metric"]: row for row in rows}
+    assert float(by_metric["rms_log_tpg_low_minus_high_median"]["Value"]) < 0
+    assert float(by_metric["mean_log_residual_tpg_low_minus_high_median"]["Value"]) > 0
+    assert by_metric["interpretation"]["Value"] == "candidate_signed_projection_offset_not_rms_excess_detection"
 
 
 def test_raw_hecate_not_tracked():

@@ -62,10 +62,12 @@ studies/zoa_foreground_screen_audit_v01/paper_packet_v01/
 
 ```text
 outputs/hecate_crossmatch_summary.csv
+outputs/sparc_residual_summary.csv
 studies/zoa_foreground_screen_audit_v01/coherence_labels_v06_distance_balanced.csv
 studies/zoa_foreground_screen_audit_v01/paper_packet_v01/foreground_screen_audit_table.csv
 studies/zoa_foreground_screen_audit_v01/paper_packet_v01/foreground_screen_threshold_scan.csv
 studies/zoa_foreground_screen_audit_v01/paper_packet_v01/foreground_screen_summary.csv
+studies/zoa_foreground_screen_audit_v01/paper_packet_v01/foreground_residual_signal_summary.csv
 ```
 
 Raw HECATE is downloaded on demand and remains untracked.

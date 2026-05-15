@@ -113,6 +113,70 @@ is small and B-dominated. A one-sided A/C hypergeometric enrichment diagnostic
 returns `p = 0.295343139746`, which is not a
 discovery-level result.
 
+## Residual-Signal Stress Test
+
+The natural follow-up question is whether the 18-object screen is also a good
+place to look for a residual projection signal. We therefore join the foreground
+screen to the public Paper 1 residual summary and test two distinct possibilities:
+
+1. A residual-scatter excess.
+2. A signed residual offset.
+
+The current packet does **not** support a simple RMS-excess claim. The median
+`rms_log_tpg` in the low-latitude screen is slightly lower than the high-latitude
+comparison set. The more interesting candidate is instead a signed offset:
+`mean_log_residual_tpg` and `outer_mean_log_residual_tpg` shift positive in the
+low-latitude screen. This is exactly the sort of weak observer-screen candidate
+that should be preregistered before any stronger interpretation.
+
+| Metric | Value | Interpretation |
+| --- | --- | --- |
+| residual_summary_available | true | public Paper 1 residual summary joined to foreground screen |
+| residual_join_rows | 120 | HECATE/SPARC rows with residual summary |
+| residual_low_screen_rows | 18 | |b| <= 24 deg |
+| residual_high_screen_rows | 102 | |b| > 24 deg |
+| rms_log_tpg_low_median | 0.140050995433 | low-latitude foreground screen |
+| rms_log_tpg_high_median | 0.146757312311 | higher-latitude comparison set |
+| rms_log_tpg_low_minus_high_median | -0.00670631687742 | diagnostic difference; not a detection |
+| weighted_rms_log_tpg_low_median | 0.116555387387 | low-latitude foreground screen |
+| weighted_rms_log_tpg_high_median | 0.137194953464 | higher-latitude comparison set |
+| weighted_rms_log_tpg_low_minus_high_median | -0.0206395660763 | diagnostic difference; not a detection |
+| mean_log_residual_tpg_low_median | 0.0477160372602 | low-latitude foreground screen |
+| mean_log_residual_tpg_high_median | -0.039649763687 | higher-latitude comparison set |
+| mean_log_residual_tpg_low_minus_high_median | 0.0873658009472 | diagnostic difference; not a detection |
+| outer_mean_log_residual_tpg_low_median | 0.00914315295169 | low-latitude foreground screen |
+| outer_mean_log_residual_tpg_high_median | -0.0241318063717 | higher-latitude comparison set |
+| outer_mean_log_residual_tpg_low_minus_high_median | 0.0332749593234 | diagnostic difference; not a detection |
+| mean_err_vobs_kms_low_median | 5.77818965517 | low-latitude foreground screen |
+| mean_err_vobs_kms_high_median | 5.1711037234 | higher-latitude comparison set |
+| mean_err_vobs_kms_low_minus_high_median | 0.607085931768 | diagnostic difference; not a detection |
+| max_radius_kpc_low_median | 25.32 | low-latitude foreground screen |
+| max_radius_kpc_high_median | 12.935 | higher-latitude comparison set |
+| max_radius_kpc_low_minus_high_median | 12.385 | diagnostic difference; not a detection |
+| n_points_low_median | 22 | low-latitude foreground screen |
+| n_points_high_median | 13 | higher-latitude comparison set |
+| n_points_low_minus_high_median | 9 | diagnostic difference; not a detection |
+| interpretation | candidate_signed_projection_offset_not_rms_excess_detection | RMS median is not elevated in the 18-object screen; signed residual medians shift positive |
+
+## Matched-Control Preview
+
+As a first guardrail, each low-latitude galaxy is greedily matched to a unique
+higher-latitude control by log HECATE distance, log radial extent, and log point
+count. This is only a preview; it is not a covariance-aware likelihood or an
+extinction-aware analysis.
+
+| Metric | Value | Interpretation |
+| --- | --- | --- |
+| matched_pair_count | 18 | greedy unique high-latitude controls matched on log distance, max radius, and point count |
+| matched_rms_log_tpg_median_low_minus_high | -0.00641394691747 | paired diagnostic difference; not a detection |
+| matched_rms_log_tpg_positive_pairs | 9/18 | sign count across matched pairs |
+| matched_weighted_rms_log_tpg_median_low_minus_high | 0.0158783211739 | paired diagnostic difference; not a detection |
+| matched_weighted_rms_log_tpg_positive_pairs | 10/18 | sign count across matched pairs |
+| matched_mean_log_residual_tpg_median_low_minus_high | 0.0100950616694 | paired diagnostic difference; not a detection |
+| matched_mean_log_residual_tpg_positive_pairs | 9/18 | sign count across matched pairs |
+| matched_outer_mean_log_residual_tpg_median_low_minus_high | 0.0105481845933 | paired diagnostic difference; not a detection |
+| matched_outer_mean_log_residual_tpg_positive_pairs | 9/18 | sign count across matched pairs |
+
 The correct reading is therefore:
 
 ```text
@@ -120,6 +184,10 @@ The Milky Way foreground screen is a real observability stratum. In this SPARC/
 HECATE packet, a reconstructed 18-object low-|b| screen is C-dominant among
 reviewed A/C labels, but the result remains a preregistered audit target rather
 than a physical inference.
+
+The residual follow-up does not show a robust RMS-excess detection. It does show
+a candidate signed residual-offset direction that is worth freezing as the next
+observer-screen test.
 ```
 
 ## Next Tests

@@ -1,0 +1,10 @@
+Metric,Value,Interpretation
+matched_pair_count,18,"greedy unique high-latitude controls matched on log distance, max radius, and point count"
+matched_rms_log_tpg_median_low_minus_high,-0.00641394691747,paired diagnostic difference; not a detection
+matched_rms_log_tpg_positive_pairs,9/18,sign count across matched pairs
+matched_weighted_rms_log_tpg_median_low_minus_high,0.0158783211739,paired diagnostic difference; not a detection
+matched_weighted_rms_log_tpg_positive_pairs,10/18,sign count across matched pairs
+matched_mean_log_residual_tpg_median_low_minus_high,0.0100950616694,paired diagnostic difference; not a detection
+matched_mean_log_residual_tpg_positive_pairs,9/18,sign count across matched pairs
+matched_outer_mean_log_residual_tpg_median_low_minus_high,0.0105481845933,paired diagnostic difference; not a detection
+matched_outer_mean_log_residual_tpg_positive_pairs,9/18,sign count across matched pairs

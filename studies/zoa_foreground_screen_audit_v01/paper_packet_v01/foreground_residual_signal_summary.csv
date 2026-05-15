@@ -1,0 +1,27 @@
+Metric,Value,Interpretation
+residual_summary_available,true,public Paper 1 residual summary joined to foreground screen
+residual_join_rows,120,HECATE/SPARC rows with residual summary
+residual_low_screen_rows,18,|b| <= 24 deg
+residual_high_screen_rows,102,|b| > 24 deg
+rms_log_tpg_low_median,0.140050995433,low-latitude foreground screen
+rms_log_tpg_high_median,0.146757312311,higher-latitude comparison set
+rms_log_tpg_low_minus_high_median,-0.00670631687742,diagnostic difference; not a detection
+weighted_rms_log_tpg_low_median,0.116555387387,low-latitude foreground screen
+weighted_rms_log_tpg_high_median,0.137194953464,higher-latitude comparison set
+weighted_rms_log_tpg_low_minus_high_median,-0.0206395660763,diagnostic difference; not a detection
+mean_log_residual_tpg_low_median,0.0477160372602,low-latitude foreground screen
+mean_log_residual_tpg_high_median,-0.039649763687,higher-latitude comparison set
+mean_log_residual_tpg_low_minus_high_median,0.0873658009472,diagnostic difference; not a detection
+outer_mean_log_residual_tpg_low_median,0.00914315295169,low-latitude foreground screen
+outer_mean_log_residual_tpg_high_median,-0.0241318063717,higher-latitude comparison set
+outer_mean_log_residual_tpg_low_minus_high_median,0.0332749593234,diagnostic difference; not a detection
+mean_err_vobs_kms_low_median,5.77818965517,low-latitude foreground screen
+mean_err_vobs_kms_high_median,5.1711037234,higher-latitude comparison set
+mean_err_vobs_kms_low_minus_high_median,0.607085931768,diagnostic difference; not a detection
+max_radius_kpc_low_median,25.32,low-latitude foreground screen
+max_radius_kpc_high_median,12.935,higher-latitude comparison set
+max_radius_kpc_low_minus_high_median,12.385,diagnostic difference; not a detection
+n_points_low_median,22,low-latitude foreground screen
+n_points_high_median,13,higher-latitude comparison set
+n_points_low_minus_high_median,9,diagnostic difference; not a detection
+interpretation,candidate_signed_projection_offset_not_rms_excess_detection,RMS median is not elevated in the 18-object screen; signed residual medians shift positive
