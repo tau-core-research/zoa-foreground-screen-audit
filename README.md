@@ -68,6 +68,7 @@ studies/zoa_foreground_screen_audit_v01/paper_packet_v01/foreground_screen_audit
 studies/zoa_foreground_screen_audit_v01/paper_packet_v01/foreground_screen_threshold_scan.csv
 studies/zoa_foreground_screen_audit_v01/paper_packet_v01/foreground_screen_summary.csv
 studies/zoa_foreground_screen_audit_v01/paper_packet_v01/foreground_residual_signal_summary.csv
+studies/zoa_foreground_screen_audit_v01/paper_packet_v01/referee_concerns_and_limitations.md
 ```
 
 Raw HECATE is downloaded on demand and remains untracked.

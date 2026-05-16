@@ -30,6 +30,7 @@ def test_packet_files_exist():
         PACKET / "foreground_matched_control_pairs.csv",
         PACKET / "claim_boundary.csv",
         PACKET / "source_manifest.csv",
+        PACKET / "referee_concerns_and_limitations.md",
         PACKET / "packet_manifest.json",
         PACKET / "figures/foreground_screen_counts.svg",
     ]

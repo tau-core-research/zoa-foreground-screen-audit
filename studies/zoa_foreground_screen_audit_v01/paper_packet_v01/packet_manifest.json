@@ -12,6 +12,7 @@
     "foreground_matched_control_summary.csv",
     "claim_boundary.csv",
     "source_manifest.csv",
+    "referee_concerns_and_limitations.md",
     "manuscript_draft.md",
     "manuscript_draft.pdf",
     "figures/foreground_screen_counts.svg"

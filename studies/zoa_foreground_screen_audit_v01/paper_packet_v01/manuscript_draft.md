@@ -15,7 +15,7 @@ ambiguous B systems. The A/C enrichment check is not statistically decisive
 (`p = 0.295343139746`), so the result is best
 read as an observer-screen audit and preregistration target, not a detection.
 
-## Motivation
+## 1. Motivation
 
 Nilo-Castellon et al. identify 102 galaxies in a JWST/NIRCam field in the Zone
 of Avoidance and describe Galactic extinction, stellar crowding, and confusion
@@ -27,13 +27,31 @@ The point of this note is not to explain galaxy dynamics. It is to preserve a
 small, reproducible foreground-screen packet that can be tested later with
 better extinction maps, star-count fields, and independent galaxy samples.
 
-## Data And Construction
+## 2. Question
+
+The working question is deliberately modest:
+
+```text
+When SPARC galaxies are stratified by a Milky Way foreground-screen proxy, does
+the low-latitude stratum show a distinctive label or residual pattern that
+should be frozen as a future observer-screen test?
+```
+
+The note separates three claims that are often too easily mixed:
+
+- a foreground-screen count claim;
+- a residual-stress diagnostic;
+- a physical interpretation.
+
+Only the first two are tested here. The third is explicitly blocked.
+
+## 3. Data And Construction
 
 Inputs:
 
 - HECATE v1.1 RA/DEC for exact-name SPARC overlaps.
 - Residual-blind A/B/C labels from the public Paper 1 SPARC residual-disturbance packet.
-- Optional residual summary fields from the public disturbance-inference packet.
+- Public residual summary fields from the Paper 1 reproducibility package.
 
 The script converts HECATE equatorial coordinates to Galactic longitude and
 latitude using the standard J2000 north Galactic pole constants. The primary
@@ -46,7 +64,7 @@ low_latitude_screen = |b| <= 24 deg
 This threshold is not claimed as fundamental. It is a transparent reconstruction
 of the remembered 18-object screen and should be stress-tested in future work.
 
-## Main Diagnostic
+## 4. Foreground-Screen Diagnostic
 
 | Metric | Value | Interpretation |
 | --- | --- | --- |
@@ -82,30 +100,30 @@ of the remembered 18-object screen and should be stress-tested in future work.
 | 29 | 23 | 12 | 2 | 11 | 10 |
 | 30 | 25 | 13 | 3 | 12 | 10 |
 
-## The 18 Low-Latitude Systems
+## 5. The 18 Low-Latitude Systems
 
-| GalaxyName | Class | AbsGalacticLatitudeDeg | GalacticLongitudeDeg | HecateDistanceMpc | Projection_RMS | ResidualDisturbanceScore_v01 |
-| --- | --- | --- | --- | --- | --- | --- |
-| UGC03205 | B | 8.206377 | 342.903037 | 54.37 |  |  |
-| NGC6946 | B | 11.672188 | 60.144887 | 5.516 |  |  |
-| UGC11557 | B | 12.814719 | 60.883601 | 23.66 |  |  |
-| UGC00731 | C | 13.149452 | 29.723502 | 13.03 |  |  |
-| NGC6674 | B | 13.919223 | 101.271460 | 54.11 |  |  |
-| UGC02885 | B | 14.050142 | 356.283096 | 71.12 |  |  |
-| UGC02916 | C | 14.194665 | 19.057928 | 66.11 |  |  |
-| ESO563-G021 | B | 14.397417 | 270.996728 | 79.44 |  |  |
-| NGC0891 | C | 17.415249 | 15.479606 | 9.111 |  |  |
-| NGC1003 | B | 17.545110 | 11.859346 | 10.76 |  |  |
-| NGC2915 | C | 18.357173 | 223.897427 | 4.03 |  |  |
-| UGC12632 | C | 19.311054 | 49.092790 | 9.204 |  |  |
-| UGC02259 | B | 19.796208 | 8.718768 | 9.954 |  |  |
-| NGC7331 | A | 20.724275 | 62.141728 | 14.4 |  |  |
-| NGC6789 | B | 21.517771 | 60.889695 | 3.267 |  |  |
-| NGC0801 | B | 22.456867 | 17.644924 | 55.53 |  |  |
-| UGC11455 | B | 22.844922 | 52.115383 | 85.75 |  |  |
-| NGC3109 | C | 23.070239 | 253.762265 | 1.291 |  |  |
+| GalaxyName | Class | AbsGalacticLatitudeDeg | GalacticLongitudeDeg | HecateDistanceMpc | RmsLogTPG | MeanLogResidualTPG | OuterMeanLogResidualTPG |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| UGC03205 | B | 8.206377 | 342.903037 | 54.37 | 0.11600949975788537 | 0.0873983245850471 | 0.055565320187085834 |
+| NGC6946 | B | 11.672188 | 60.144887 | 5.516 | 0.0896359090075854 | -0.0831693606116379 | -0.09256925858478726 |
+| UGC11557 | B | 12.814719 | 60.883601 | 23.66 | 0.7431151375673428 | -0.6040787203825251 | -0.35763864335701157 |
+| UGC00731 | C | 13.149452 | 29.723502 | 13.03 | 0.339703437495753 | 0.21001308628006135 | -0.0782044521386274 |
+| NGC6674 | B | 13.919223 | 101.271460 | 54.11 | 0.1261360715254176 | 0.10826931615214701 | 0.10598763897950496 |
+| UGC02885 | B | 14.050142 | 356.283096 | 71.12 | 0.06662315534970306 | 0.04685592336981314 | 0.0463394047425374 |
+| UGC02916 | C | 14.194665 | 19.057928 | 66.11 | 0.13928911042196776 | -0.06831440677751897 | -0.07903890648018923 |
+| ESO563-G021 | B | 14.397417 | 270.996728 | 79.44 | 0.29404072405040915 | 0.07931689655380693 | 0.1691008384002877 |
+| NGC0891 | C | 17.415249 | 15.479606 | 9.111 | 0.1259442118714204 | -0.09347531570220223 | -0.05008617779939154 |
+| NGC1003 | B | 17.545110 | 11.859346 | 10.76 | 0.12113411141685551 | 0.024974111717001073 | 0.14932873924545975 |
+| NGC2915 | C | 18.357173 | 223.897427 | 4.03 | 0.44092390599176534 | 0.27527781688707265 | 0.3774115856001438 |
+| UGC12632 | C | 19.311054 | 49.092790 | 9.204 | 0.1052568716207706 | 0.0485761511506591 | -0.07054854024451106 |
+| UGC02259 | B | 19.796208 | 8.718768 | 9.954 | 0.26943439551068704 | 0.24286674478824713 | 0.15148615161698695 |
+| NGC7331 | A | 20.724275 | 62.141728 | 14.4 | 0.09804264249274548 | -0.08633593090910359 | -0.03659801898184237 |
+| NGC6789 | B | 21.517771 | 60.889695 | 3.267 | 0.3895854018308549 | 0.35690932806891795 | 0.5020305791744587 |
+| NGC0801 | B | 22.456867 | 17.644924 | 55.53 | 0.1408128804442707 | -0.08465940603010062 | -0.17407443093346248 |
+| UGC11455 | B | 22.844922 | 52.115383 | 85.75 | 0.14196092541106067 | -0.06123895742954915 | -0.028053098839149467 |
+| NGC3109 | C | 23.070239 | 253.762265 | 1.291 | 0.17587234171290073 | 0.1284165505065754 | 0.24323203399945445 |
 
-## Interpretation
+## 6. Label-Stratum Interpretation
 
 The result is directionally interesting because the low-latitude screen is
 C-heavy among systems that already have reviewed A/C labels. However, the sample
@@ -113,7 +131,7 @@ is small and B-dominated. A one-sided A/C hypergeometric enrichment diagnostic
 returns `p = 0.295343139746`, which is not a
 discovery-level result.
 
-## Residual-Signal Stress Test
+## 7. Residual-Signal Stress Test
 
 The natural follow-up question is whether the 18-object screen is also a good
 place to look for a residual projection signal. We therefore join the foreground
@@ -158,7 +176,7 @@ that should be preregistered before any stronger interpretation.
 | n_points_low_minus_high_median | 9 | diagnostic difference; not a detection |
 | interpretation | candidate_signed_projection_offset_not_rms_excess_detection | RMS median is not elevated in the 18-object screen; signed residual medians shift positive |
 
-## Matched-Control Preview
+## 8. Matched-Control Preview
 
 As a first guardrail, each low-latitude galaxy is greedily matched to a unique
 higher-latitude control by log HECATE distance, log radial extent, and log point
@@ -177,6 +195,20 @@ extinction-aware analysis.
 | matched_outer_mean_log_residual_tpg_median_low_minus_high | 0.0105481845933 | paired diagnostic difference; not a detection |
 | matched_outer_mean_log_residual_tpg_positive_pairs | 9/18 | sign count across matched pairs |
 
+## 9. What The Result Does Not Say
+
+The current packet does not show that the Milky Way foreground creates galaxy
+disturbance. It also does not show that a new dynamical law is required. The
+positive signed residual shift may come from ordinary observational effects:
+foreground extinction, stellar crowding, different target selection, distance
+and radius imbalance, inclination systematics, or residual calibration choices.
+
+The result is useful because it defines a clean future test. If a foreground
+observer-screen effect is real, it should survive after replacing `|b|` with
+physical foreground maps such as `E(B-V)`, `A_V`, source density, and confusion
+metrics. If it disappears under those controls, the present 18-object window was
+only a selection artifact.
+
 The correct reading is therefore:
 
 ```text
@@ -190,7 +222,7 @@ a candidate signed residual-offset direction that is worth freezing as the next
 observer-screen test.
 ```
 
-## Next Tests
+## 10. Preregistered Next Tests
 
 1. Replace the latitude-only proxy with `E(B-V)`, `A_V`, star-count density, and
    local confusion metrics.
@@ -199,8 +231,10 @@ observer-screen test.
 4. Separate foreground observability effects from intrinsic disturbance evidence.
 5. Report all A/B/C transitions under threshold scans rather than selecting only
    the most favorable boundary.
+6. Test signed residual offset before RMS excess, because the present packet
+   disfavors the simplest RMS-excess version of the hypothesis.
 
-## Claim Boundary
+## 11. Claim Boundary
 
 This note does not claim new dynamics, a physical detection, or proof of any
 private parent theory. It is a public observer-screen method note.

@@ -6,7 +6,6 @@ from __future__ import annotations
 import csv
 import json
 import math
-import textwrap
 import urllib.request
 from collections import Counter
 from pathlib import Path
@@ -21,7 +20,6 @@ HECATE_URL = "https://hecate.ia.forth.gr/assets/files/HECATE_v1.1.csv"
 HECATE_RAW = ROOT / "data/external/raw/hecate/HECATE_v1.1.csv"
 HECATE_CROSSMATCH = ROOT / "outputs/hecate_crossmatch_summary.csv"
 LABELS = STUDY / "coherence_labels_v06_distance_balanced.csv"
-RESIDUALS = ROOT / "outputs/residual_disturbance_score_v01.csv"
 PUBLIC_RESIDUAL_SUMMARY = ROOT / "outputs/sparc_residual_summary.csv"
 
 # J2000 constants from the standard equatorial-to-Galactic coordinate rotation.
@@ -93,7 +91,11 @@ def one_sided_hypergeom_p(success_total: int, population_total: int, draw_count:
 def build_audit_rows() -> list[dict[str, object]]:
     hecate_by_pgc = {row["PGC"]: row for row in read_csv(HECATE_RAW)}
     labels = {row["GalaxyName"]: row for row in read_csv(LABELS)}
-    residuals = {row["GalaxyName"]: row for row in read_csv(RESIDUALS)} if RESIDUALS.exists() else {}
+    residuals = (
+        {row["galaxy_name"]: row for row in read_csv(PUBLIC_RESIDUAL_SUMMARY)}
+        if PUBLIC_RESIDUAL_SUMMARY.exists()
+        else {}
+    )
 
     rows: list[dict[str, object]] = []
     for cross in read_csv(HECATE_CROSSMATCH):
@@ -118,8 +120,10 @@ def build_audit_rows() -> list[dict[str, object]]:
                 "GalacticLatitudeDeg": f"{glat:.6f}",
                 "AbsGalacticLatitudeDeg": f"{abs(glat):.6f}",
                 "low_latitude_screen_24deg": str(abs(glat) <= 24.0).lower(),
-                "Projection_RMS": residual.get("Projection_RMS", ""),
-                "ResidualDisturbanceScore_v01": residual.get("ResidualDisturbanceScore_v01", ""),
+                "RmsLogTPG": residual.get("rms_log_tpg", ""),
+                "WeightedRmsLogTPG": residual.get("weighted_rms_log_tpg", ""),
+                "MeanLogResidualTPG": residual.get("mean_log_residual_tpg", ""),
+                "OuterMeanLogResidualTPG": residual.get("outer_mean_log_residual_tpg", ""),
             }
         )
     return sorted(rows, key=lambda row: float(row["AbsGalacticLatitudeDeg"]))
@@ -461,7 +465,7 @@ ambiguous B systems. The A/C enrichment check is not statistically decisive
 (`p = {summary_lookup['ac_one_sided_c_enrichment_p']}`), so the result is best
 read as an observer-screen audit and preregistration target, not a detection.
 
-## Motivation
+## 1. Motivation
 
 Nilo-Castellon et al. identify 102 galaxies in a JWST/NIRCam field in the Zone
 of Avoidance and describe Galactic extinction, stellar crowding, and confusion
@@ -473,13 +477,31 @@ The point of this note is not to explain galaxy dynamics. It is to preserve a
 small, reproducible foreground-screen packet that can be tested later with
 better extinction maps, star-count fields, and independent galaxy samples.
 
-## Data And Construction
+## 2. Question
+
+The working question is deliberately modest:
+
+```text
+When SPARC galaxies are stratified by a Milky Way foreground-screen proxy, does
+the low-latitude stratum show a distinctive label or residual pattern that
+should be frozen as a future observer-screen test?
+```
+
+The note separates three claims that are often too easily mixed:
+
+- a foreground-screen count claim;
+- a residual-stress diagnostic;
+- a physical interpretation.
+
+Only the first two are tested here. The third is explicitly blocked.
+
+## 3. Data And Construction
 
 Inputs:
 
 - HECATE v1.1 RA/DEC for exact-name SPARC overlaps.
 - Residual-blind A/B/C labels from the public Paper 1 SPARC residual-disturbance packet.
-- Optional residual summary fields from the public disturbance-inference packet.
+- Public residual summary fields from the Paper 1 reproducibility package.
 
 The script converts HECATE equatorial coordinates to Galactic longitude and
 latitude using the standard J2000 north Galactic pole constants. The primary
@@ -492,7 +514,7 @@ low_latitude_screen = |b| <= 24 deg
 This threshold is not claimed as fundamental. It is a transparent reconstruction
 of the remembered 18-object screen and should be stress-tested in future work.
 
-## Main Diagnostic
+## 4. Foreground-Screen Diagnostic
 
 {markdown_table(summary, ['Metric', 'Value', 'Interpretation'])}
 
@@ -500,11 +522,11 @@ of the remembered 18-object screen and should be stress-tested in future work.
 
 {markdown_table(scan_rows, ['AbsGalacticLatitudeThresholdDeg', 'N_total', 'N_AC', 'N_A', 'N_B', 'N_C'])}
 
-## The 18 Low-Latitude Systems
+## 5. The 18 Low-Latitude Systems
 
-{markdown_table(low_rows, ['GalaxyName', 'Class', 'AbsGalacticLatitudeDeg', 'GalacticLongitudeDeg', 'HecateDistanceMpc', 'Projection_RMS', 'ResidualDisturbanceScore_v01'])}
+{markdown_table(low_rows, ['GalaxyName', 'Class', 'AbsGalacticLatitudeDeg', 'GalacticLongitudeDeg', 'HecateDistanceMpc', 'RmsLogTPG', 'MeanLogResidualTPG', 'OuterMeanLogResidualTPG'])}
 
-## Interpretation
+## 6. Label-Stratum Interpretation
 
 The result is directionally interesting because the low-latitude screen is
 C-heavy among systems that already have reviewed A/C labels. However, the sample
@@ -512,7 +534,7 @@ is small and B-dominated. A one-sided A/C hypergeometric enrichment diagnostic
 returns `p = {summary_lookup['ac_one_sided_c_enrichment_p']}`, which is not a
 discovery-level result.
 
-## Residual-Signal Stress Test
+## 7. Residual-Signal Stress Test
 
 The natural follow-up question is whether the 18-object screen is also a good
 place to look for a residual projection signal. We therefore join the foreground
@@ -530,7 +552,7 @@ that should be preregistered before any stronger interpretation.
 
 {markdown_table(residual_summary, ['Metric', 'Value', 'Interpretation'])}
 
-## Matched-Control Preview
+## 8. Matched-Control Preview
 
 As a first guardrail, each low-latitude galaxy is greedily matched to a unique
 higher-latitude control by log HECATE distance, log radial extent, and log point
@@ -538,6 +560,20 @@ count. This is only a preview; it is not a covariance-aware likelihood or an
 extinction-aware analysis.
 
 {markdown_table(matched_summary, ['Metric', 'Value', 'Interpretation'])}
+
+## 9. What The Result Does Not Say
+
+The current packet does not show that the Milky Way foreground creates galaxy
+disturbance. It also does not show that a new dynamical law is required. The
+positive signed residual shift may come from ordinary observational effects:
+foreground extinction, stellar crowding, different target selection, distance
+and radius imbalance, inclination systematics, or residual calibration choices.
+
+The result is useful because it defines a clean future test. If a foreground
+observer-screen effect is real, it should survive after replacing `|b|` with
+physical foreground maps such as `E(B-V)`, `A_V`, source density, and confusion
+metrics. If it disappears under those controls, the present 18-object window was
+only a selection artifact.
 
 The correct reading is therefore:
 
@@ -552,7 +588,7 @@ a candidate signed residual-offset direction that is worth freezing as the next
 observer-screen test.
 ```
 
-## Next Tests
+## 10. Preregistered Next Tests
 
 1. Replace the latitude-only proxy with `E(B-V)`, `A_V`, star-count density, and
    local confusion metrics.
@@ -561,8 +597,10 @@ observer-screen test.
 4. Separate foreground observability effects from intrinsic disturbance evidence.
 5. Report all A/B/C transitions under threshold scans rather than selecting only
    the most favorable boundary.
+6. Test signed residual offset before RMS excess, because the present packet
+   disfavors the simplest RMS-excess version of the hypothesis.
 
-## Claim Boundary
+## 11. Claim Boundary
 
 This note does not claim new dynamics, a physical detection, or proof of any
 private parent theory. It is a public observer-screen method note.
@@ -632,6 +670,42 @@ computes Galactic coordinates, and rebuilds all packet tables.
 """
     (PACKET / "reproducibility.md").write_text(reproducibility, encoding="utf-8")
 
+    limitations = """# Referee Concerns And Limitations
+
+## Why this is not a detection
+
+The foreground screen selects only 18 systems and the A/C subset contains only
+seven reviewed systems. The one-sided A/C enrichment diagnostic is not
+statistically decisive. The result is a screening observation, not a discovery.
+
+## Why `|b| <= 24 deg` is provisional
+
+The threshold reconstructs the 18-object foreground-screen window. It is not a
+physical boundary. A paper-grade follow-up must replace it with foreground maps:
+`E(B-V)`, `A_V`, source density, and confusion metrics.
+
+## Why the residual result is subtle
+
+The low-latitude screen does not show a median RMS excess. The candidate signal
+is a signed residual offset. This blocks the simple claim that foreground
+screening merely increases residual scatter.
+
+## Main confounders
+
+- Milky Way extinction and crowding.
+- Galaxy target selection near the Galactic plane.
+- Distance, radial extent, and point-count imbalance.
+- Inclination and morphology systematics.
+- Residual calibration choices inherited from Paper 1.
+
+## Stronger future test
+
+Freeze the signed-offset endpoint, use foreground extinction maps, match
+low-/high-latitude controls before residual inspection, and then test whether
+the signed offset survives.
+"""
+    (PACKET / "referee_concerns_and_limitations.md").write_text(limitations, encoding="utf-8")
+
     manifest = {
         "packet": "zoa_foreground_screen_audit_v01/paper_packet_v01",
         "status": "seed_public_method_note",
@@ -646,6 +720,7 @@ computes Galactic coordinates, and rebuilds all packet tables.
             "foreground_matched_control_summary.csv",
             "claim_boundary.csv",
             "source_manifest.csv",
+            "referee_concerns_and_limitations.md",
             "manuscript_draft.md",
             "manuscript_draft.pdf",
             "figures/foreground_screen_counts.svg",
@@ -678,8 +753,10 @@ def main() -> None:
         "GalacticLatitudeDeg",
         "AbsGalacticLatitudeDeg",
         "low_latitude_screen_24deg",
-        "Projection_RMS",
-        "ResidualDisturbanceScore_v01",
+        "RmsLogTPG",
+        "WeightedRmsLogTPG",
+        "MeanLogResidualTPG",
+        "OuterMeanLogResidualTPG",
     ]
     scan_fields = [
         "AbsGalacticLatitudeThresholdDeg",
