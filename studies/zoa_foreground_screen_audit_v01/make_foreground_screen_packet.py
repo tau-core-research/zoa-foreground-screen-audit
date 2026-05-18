@@ -368,7 +368,7 @@ def write_static_tables() -> None:
         {
             "SourceID": "PAPER1_LABELS",
             "Citation": "SPARC residual-disturbance Paper 1 public label packet",
-            "URL": "https://github.com/jolcsak/sparc-residual-disturbance-paper1",
+            "URL": "https://github.com/tau-core-research/sparc-residual-disturbance-paper1",
             "Role": "source of residual-blind A/B/C labels",
         },
     ]

@@ -5,8 +5,7 @@ type: software
 authors:
   - family-names: Jolcsak
     given-names: ""
-repository-code: "https://github.com/jolcsak/zoa-foreground-screen-audit"
+repository-code: "https://github.com/tau-core-research/zoa-foreground-screen-audit"
 license: MIT
 version: 0.1.0
 date-released: 2026-05-15
-
